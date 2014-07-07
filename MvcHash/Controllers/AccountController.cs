@@ -35,7 +35,7 @@ namespace MvcHash.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Login(LoginModel model, string returnUrl)
         {
-            if (ModelState.IsValid && WebSecurity.Login(model.UserName, model.Password, persistCookie: model.RememberMe))
+            if (ModelState.IsValid && WebSecurity.Login(model.Email, model.Password, persistCookie: model.RememberMe))
             {
                 return RedirectToLocal(returnUrl);
             }
@@ -79,8 +79,9 @@ namespace MvcHash.Controllers
                 // Attempt to register the user
                 try
                 {
-                    WebSecurity.CreateUserAndAccount(model.UserName, model.Password);
-                    WebSecurity.Login(model.UserName, model.Password);
+
+                    WebSecurity.CreateUserAndAccount(model.Email, model.Password);
+                    WebSecurity.Login(model.Email, model.Password);
                     return RedirectToAction("Index", "Home");
                 }
                 catch (MembershipCreateUserException e)
@@ -200,6 +201,32 @@ namespace MvcHash.Controllers
             return View(model);
         }
 
+        // 
+        // GET: /Account/ForgotPassword
+        [AllowAnonymous]
+        public ActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        //
+        // POST: /Account/ForgotPassword
+        [HttpPost]
+        [AllowAnonymous]
+        public ActionResult ForgotPassword(string Email)
+        {
+            var key = WebSecurity.GeneratePasswordResetToken(Email);
+            return Content(key);
+        }
+
+        //
+        // GET: /Account/ResetPassword
+        [AllowAnonymous]
+        public ActionResult ResetPassword(string Token, String NewPassword)
+        {
+            WebSecurity.ResetPassword(Token, NewPassword);
+            return RedirectToAction("Index", "Home");
+        }
         //
         // POST: /Account/ExternalLogin
 
